@@ -81,8 +81,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Libraries\v8\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Libraries\v8\v8\out\x86.no-i18n.release\obj;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\Libraries\v8\v8\include;D:\Libraries\v8pp\;D:\Libraries\libuv\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Libraries\libuv\build\RelWithDebInfo;D:\Libraries\v8pp\bin\Release\;D:\Libraries\v8\v8\out\x86.no-i18n.release\obj;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -119,6 +119,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>uv_a.lib;v8pp.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
