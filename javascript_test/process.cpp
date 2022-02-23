@@ -10,7 +10,7 @@ void version_callback(v8::FunctionCallbackInfo<v8::Value> const& args) {
 	args.GetReturnValue().Set(versions);
 }
 
-void compile(v8::FunctionCallbackInfo<v8::Value> const& args) {
+void Process::compile(v8::FunctionCallbackInfo<v8::Value> const& args) {
 	auto isolate = v8::Isolate::GetCurrent();
 	auto context = isolate->GetCurrentContext();
 	v8::ScriptOrigin origin(isolate, args[0]->ToString(context).ToLocalChecked());
@@ -28,47 +28,35 @@ void compile(v8::FunctionCallbackInfo<v8::Value> const& args) {
 }
 
 void get_file_contents(v8::FunctionCallbackInfo<v8::Value> const& args) {
-	v8::String::Utf8Value str(args.GetIsolate(), args[0]);
-	const char* filename = ToCString(str);
-	auto chars = read_file(filename);
-	if (!chars) {
+	auto isolate = args.GetIsolate();
+	v8::HandleScope scope(isolate);
+	v8::String::Utf8Value str(isolate, args[0]);
+	auto filename = ToCString(str);
+	auto content = read_file(filename);
+	if (content.empty())
 		args.GetReturnValue().Set(v8_str(""));
-	}
-	else {
-		args.GetReturnValue().Set(v8_str(chars));
-	}
+	else
+		args.GetReturnValue().Set(v8_str(content.c_str()));
 }
 
-void print(v8::FunctionCallbackInfo<v8::Value> const& args) {
+void Process::chdir(v8::FunctionCallbackInfo<v8::Value> const& args) {
 	auto isolate = args.GetIsolate();
 	v8::HandleScope scope(isolate);
-	for (auto i = 0; i < args.Length(); ++i) {
-		if (i > 0)
-			printf(" ");
-		v8::String::Utf8Value str(isolate, args[i]);
-		auto cstr = ToCString(str);
-		printf("%s", cstr);
-	}
-	printf("\n");
-	fflush(stdout);
+	v8::String::Utf8Value str(isolate, args[0]);
+	auto dir = ToCString(str);
+	SetCurrentDirectoryA(dir);
+	args.GetReturnValue().SetUndefined();
 }
 
-void print_error(v8::FunctionCallbackInfo<v8::Value> const& args) {
+void Process::cwd(v8::FunctionCallbackInfo<v8::Value> const& args) {
 	auto isolate = args.GetIsolate();
-	printf("Error: ");
 	v8::HandleScope scope(isolate);
-	for (auto i = 0; i < args.Length(); ++i) {
-		if (i > 0)
-			printf(" ");
-		v8::String::Utf8Value str(isolate, args[i]);
-		auto cstr = ToCString(str);
-		printf("%s", cstr);
-	}
-	printf("\n");
-	fflush(stdout);
+	char dir[MAX_PATH];
+	GetCurrentDirectoryA(MAX_PATH, dir);
+	args.GetReturnValue().Set(v8_str(dir));
 }
 
-void Process::init(int argc, char* argv[]) {
+/*void Process::init(int argc, char* argv[]) {
 	auto global = context->Global();
 
 	auto process = v8::Object::New(isolate);
@@ -82,4 +70,4 @@ void Process::init(int argc, char* argv[]) {
 	process->Set(context, v8_str("Print"), v8::Function::New(context, print).ToLocalChecked());
 	process->Set(context, v8_str("PrintError"), v8::Function::New(context, print_error).ToLocalChecked());
 	global->Set(context, v8_str("process"), process);
-}
+}*/

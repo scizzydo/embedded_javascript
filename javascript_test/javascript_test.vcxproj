@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app.h" />
+    <ClInclude Include="console.h" />
+    <ClInclude Include="os.h" />
     <ClInclude Include="PersistentHandleWrapper.h" />
     <ClInclude Include="process.h" />
     <ClInclude Include="stdafx.h" />
@@ -29,7 +31,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="app.cpp" />
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="os.cpp" />
     <ClCompile Include="process.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="util.cpp" />

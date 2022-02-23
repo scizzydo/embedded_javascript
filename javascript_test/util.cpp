@@ -1,23 +1,12 @@
 #include "util.h"
+#include <fstream>
 
-char* read_file(const char* filename) {
-	auto file = fopen(filename, "rb");
-	if (!file)
-		return nullptr;
-	fseek(file, 0, SEEK_END);
-	auto size = ftell(file);
-	rewind(file);
-	auto chars = new char[size + 1];
-	chars[size] = '\0';
-
-	for (auto i = 0; i < size;) {
-		i += fread(&chars[i], 1, size - i, file);
-		if (ferror(file)) {
-			fclose(file);
-			delete[] chars;
-			return nullptr;
-		}
-	}
-	fclose(file);
-	return chars;
+std::string read_file(const char* filename) {
+	std::string content;
+	std::ifstream ifs(filename);
+	if (!ifs.good())
+		return content;
+	std::istreambuf_iterator<char> begin(ifs), end;
+	content = std::string(begin, end);
+	return content;
 }

@@ -2,13 +2,10 @@
 #include "v8_type.h"
 #include <uv.h>
 
-class Process {
-	v8::Local<v8::Context> context;
-	v8::Isolate* isolate;
-public:
-	void init(int argc, char* argv[]);
-	Process(v8::Local<v8::Context> context, v8::Isolate* isolate) :
-		context(context),
-		isolate(isolate)
-	{}
+struct Process {
+	std::string execPath;
+	int pid;
+	void chdir(v8::FunctionCallbackInfo<v8::Value> const& args);
+	void cwd(v8::FunctionCallbackInfo<v8::Value> const& args);
+	void compile(v8::FunctionCallbackInfo<v8::Value> const& args);
 };
