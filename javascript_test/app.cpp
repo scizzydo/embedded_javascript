@@ -103,6 +103,32 @@ void require(v8::FunctionCallbackInfo<v8::Value> const& args) {
 	v8::HandleScope scope(isolate);
 	auto context = isolate->GetCurrentContext();
 	v8::String::Utf8Value str(isolate, args[0]);
+	if (strcmp(*str, "os") == 0) {
+		v8pp::class_<OS> os(isolate);
+		os.ctor()
+			.const_("EOL", v8_str(R"(\r\n)"))
+			.const_("devNull", v8_str(R"(\\.\nul)"))
+			.function("arch", &OS::arch)
+			.function("cpus", &OS::cpus)
+			.function("endianness", &OS::endianness)
+			.function("freemem", &OS::freemem)
+			.function("getPriority", &OS::getPriority)
+			.function("homedir", &OS::homedir)
+			.function("hostname", &OS::hostname)
+			.function("loadavg", &OS::loadavg)
+			.function("networkInterfaces", &OS::networkInterfaces)
+			.function("platform", &OS::platform)
+			.function("release", &OS::release)
+			.function("setPriority", &OS::setPriority)
+			.function("tmpdir", &OS::tmpdir)
+			.function("totalmem", &OS::totalmem)
+			.function("type", &OS::type)
+			.function("uptime", &OS::uptime)
+			.function("userInfo", &OS::userInfo)
+			.function("version", &OS::version);
+		args.GetReturnValue().Set(os.create_object(isolate));
+		return;
+	}
 	auto path = get_module_path(str);
 	auto file = path.string();
 	if (loaded_modules.count(file)) {
@@ -122,7 +148,7 @@ void require(v8::FunctionCallbackInfo<v8::Value> const& args) {
 			if (temp_path.has_parent_path()) {
 				previous = std::filesystem::current_path().string();
 				SetCurrentDirectory(temp_path.parent_path().string().c_str());
-				content = read_file(temp_path.string().c_str());
+				content = read_file(temp_path.filename().string().c_str());
 			}
 			else {
 				content = read_file(file.c_str());
@@ -160,31 +186,6 @@ void App::setup_global(int argc, char* argv[]) {
 		.function("cwd", &Process::cwd)
 		.function("chdir", &Process::chdir);
 	global->Set(context, v8_str("process"), process_class.create_object(isolate));
-
-	v8pp::class_<OS> os(isolate);
-	os.ctor()
-		.const_("EOL", v8_str(R"(\r\n)"))
-		.const_("devNull", v8_str(R"(\\.\nul)"))
-		.function("arch", &OS::arch)
-		.function("cpus", &OS::cpus)
-		.function("endianness", &OS::endianness)
-		.function("freemem", &OS::freemem)
-		.function("getPriority", &OS::getPriority)
-		.function("homedir", &OS::homedir)
-		.function("hostname", &OS::hostname)
-		.function("loadavg", &OS::loadavg)
-		.function("networkInterfaces", &OS::networkInterfaces)
-		.function("platform", &OS::platform)
-		.function("release", &OS::release)
-		.function("setPriority", &OS::setPriority)
-		.function("tmpdir", &OS::tmpdir)
-		.function("totalmem", &OS::totalmem)
-		.function("type", &OS::type)
-		.function("uptime", &OS::uptime)
-		.function("userInfo", &OS::userInfo)
-		.function("version", &OS::version);
-
-	global->Set(context, v8_str("os"), os.create_object(isolate));
 
 	global->Set(context, v8_str("require"), v8::FunctionTemplate::New(isolate, require)->GetFunction(context).ToLocalChecked());
 }
@@ -233,14 +234,12 @@ bool execute_string(v8::Isolate* isolate, v8::Local<v8::String> source, const ch
 		0, false, current_id, v8::Local<v8::Value>(), false, false, false);	
 	v8::Local<v8::Context> context(isolate->GetCurrentContext());
 	v8::Local<v8::Script> script;
-	//v8::Local<v8::Module> mod;
 	if (!v8::Script::Compile(context, source, &origin).ToLocal(&script)) {
 		report_exception(isolate, &try_catch);
 		return false;
 	}
 	else {
 		v8::Local<v8::Value> result;
-//		if (mod->InstantiateModule(context, call_resolve).IsNothing()) {
 		if (!script->Run(context).ToLocal(&result)) {
 			assert(try_catch.HasCaught());
 			report_exception(isolate, &try_catch);
